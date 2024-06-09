@@ -548,10 +548,19 @@ class InfiniteScrollPhysics extends ScrollPhysics {
       return super.createBallisticSimulation(metrics, velocity);
     }
 
+    // Fix unsupported operation exception in double.round() when we attempt to
+    // add a NaN offset in `_getItemFromOffset`.
+    final double offset;
+    final double? simOffset = testFrictionSimulation?.x(double.infinity);
+    if (simOffset == null || simOffset.isNaN) {
+      offset = metrics.pixels;
+    } else {
+      offset = simOffset;
+    }
     // From the natural final position, find the nearest item it should have
     // settled to.
     final int settlingItemIndex = _getItemFromOffset(
-      offset: testFrictionSimulation?.x(double.infinity) ?? metrics.pixels,
+      offset: offset,
       itemExtent: metrics.itemExtent,
       minScrollExtent: metrics.minScrollExtent,
       maxScrollExtent: metrics.maxScrollExtent,
